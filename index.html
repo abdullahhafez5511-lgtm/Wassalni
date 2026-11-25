@@ -1,6 +1,6 @@
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f97316">
+<meta http-equiv="Cache-Control" content="no-cache"><meta name="theme-color" content="#f97316">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="وصّلني"><title>وصّلني</title>
@@ -127,7 +127,9 @@ const $=s=>root.querySelector(s);
 const VL={moto:'موتوسيكل',tuk:'توكتوك'};
 const ICON_MOTO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3"/><circle cx="18.5" cy="17" r="3"/><path d="M8.5 17h4l3-6h-5M15 6h3l1 3M12 11l-2-3H7"/></svg>';
 const ICON_TUK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16V9a3 3 0 0 1 3-3h8l4 5h3v5"/><path d="M3 16h3M10 16h6M14 6v5h7"/><circle cx="7" cy="17" r="2.2"/><circle cx="18" cy="17" r="2.2"/></svg>';
-let cur=['driver','owner'].includes(location.hash.slice(1))?location.hash.slice(1):'customer',customer=null,driver=null,trips=[],drivers=[],nid=1,vsel='',error='';
+function ld(k){try{const o=JSON.parse(localStorage.getItem(k)||'null');if(o&&o.name&&o.phone){o.sent=false;o.on=false;return o}}catch(e){}return null}
+function sv(){try{if(customer)localStorage.setItem('w-customer',JSON.stringify({name:customer.name,phone:customer.phone}));if(driver)localStorage.setItem('w-driver',JSON.stringify({name:driver.name,phone:driver.phone,v:driver.v}))}catch(e){}}
+let cur=['driver','owner'].includes(location.hash.slice(1))?location.hash.slice(1):'customer',customer=ld('w-customer'),driver=ld('w-driver'),trips=[],drivers=[],nid=1,vsel='',error='';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ICON_U='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="10" cy="8" r="4"/><path d="M2 21c0-4 3.5-6.500 8-6.500s8 2.500 8 6.500z"/><path d="M17 8l2 2 3-3.500" stroke="currentColor" fill="none" stroke-width="2"/></svg>';
 const ICON_C='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="3"/><circle cx="12" cy="10" r="2.500"/><path d="M8 17c.5-2 2-3 4-3s3.500 1 4 3"/></svg>';
@@ -210,7 +212,7 @@ root.addEventListener('click',async e=>{
  else if(a==='tog'){driver.on=!driver.on;if(live){await api('POST',{action:'ping',name:driver.name,vehicle:driver.v,on:driver.on});await refresh()}}
  else{const r=trips.find(x=>String(x.id)===b.dataset.id);if(r){r.s=a==='yes'?'ok':'no';r.by=driver.name;if(live){await api('POST',{action:a==='yes'?'accept':'reject',id:r.id,driver:driver.name});await refresh()}}}
  }catch(err){error='حصلت مشكلة في الاتصال. جرّب تاني.'}
- render();
+ sv();render();
 });
 render();
 if(live){refresh();setInterval(refresh,5000);setInterval(ping,30000)}
