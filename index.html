@@ -1,0 +1,204 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f97316">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="وصّلني"><title>وصّلني</title>
+<style>
+html,body{margin:0;background:#f97316}
+body.ready{background:#f4f5f7}
+#splash{position:fixed;top:0;left:0;right:0;bottom:0;height:100vh;height:100dvh;z-index:99;background:#f97316;display:flex;align-items:center;justify-content:center;padding:max(28px,env(safe-area-inset-top)) 28px calc(110px + env(safe-area-inset-bottom));text-align:center;opacity:1;transition:opacity .6s ease}
+#splash.out{opacity:0;pointer-events:none}
+#splash p{margin:0;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35);font-size:30px;font-weight:800;line-height:1.8;font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic","Geeza Pro",Arial,sans-serif}
+#app{display:none}
+.app header{padding-top:calc(22px + env(safe-area-inset-top))}
+</style></head><body>
+<div id="splash"><p id="dhikr"></p></div>
+<div id="app"></div>
+<script>
+const API_URL = ''; // set to the Apps Script web app URL once deployed
+const ADHKAR=[
+  'استغفر الله العظيم',
+  'سبحان الله وبحمده',
+  'لا حول ولا قوة إلا بالله العلي العظيم',
+  'سبحان الله العظيم',
+]; // add more here, one per line
+function mount(root){
+const live = !!API_URL;
+root.innerHTML = `<style>
+*{box-sizing:border-box}
+
+.wrap{background:#f4f5f7;color:#1e293b;font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic","Geeza Pro","Arial",sans-serif;-webkit-text-size-adjust:100%}
+.app{max-width:480px;margin:0 auto;background:#f4f5f7}
+header{background:linear-gradient(135deg,#d97706 0%,#f97316 50%,#f59e0b 100%);padding:22px 14px 16px;color:#fff;border-radius:0 0 28px 28px;box-shadow:0 8px 24px rgba(249,115,22,.25)}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.logo{width:62px;height:62px;border-radius:20px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex:none}
+.logo svg{width:36px;height:36px}
+h1{margin:0;font-size:38px;font-weight:800;line-height:1.1}
+.counter{background:#231f27;border:1px solid rgba(255,255,255,.18);border-radius:22px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin:0 auto 14px;box-shadow:0 8px 18px rgba(0,0,0,.25)}
+.counter .t{font-size:15px;color:#fff}.counter .s{font-size:13px;color:#a8a3b0;margin-top:6px}
+.counter .n{display:flex;align-items:center;gap:12px}
+.counter .num{font-size:34px;font-weight:800;color:#4ade80;line-height:1}
+.dot{width:34px;height:34px;border-radius:50%;background:rgba(34,197,94,.25);display:flex;align-items:center;justify-content:center}
+.dot i{width:18px;height:18px;border-radius:50%;background:#22c55e;display:block}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid rgba(255,255,255,.35);padding-top:14px}
+.tab{border:0;font:inherit;font-weight:700;font-size:15px;color:#fff;background:rgba(255,255,255,.22);border-radius:16px;padding:14px 10px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:56px}
+.tab svg{width:20px;height:20px;flex:none}
+.tab.on{background:#fff;color:#ea580c}
+.tab.wide{grid-column:1/-1;min-height:48px}
+.copy{margin-top:10px;width:100%;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.35);color:#fff;font:inherit;font-weight:700;font-size:14px;border-radius:16px;padding:13px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+.copy svg{width:18px;height:18px}
+main{padding:18px 14px 40px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:28px;padding:20px 18px;box-shadow:0 4px 14px rgba(15,23,42,.05);margin-bottom:16px}
+.ch{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.ci{width:46px;height:46px;border-radius:14px;background:#ffedd5;color:#ea580c;display:flex;align-items:center;justify-content:center;flex:none}
+.ci svg{width:24px;height:24px}
+.ch h2{margin:0;font-size:22px;font-weight:800;flex:1}
+.badge{font-size:13px;font-weight:700;background:#f1f5f9;color:#475569;border-radius:999px;padding:8px 16px}
+.badge.ok{background:#dcfce7;color:#15803d}
+label{display:block;font-size:14px;font-weight:700;color:#334155;margin:14px 4px 8px}
+input{width:100%;font:inherit;font-size:16px;padding:16px 16px;border:1.5px solid #cbd5e1;border-radius:18px;background:#fff;color:#0f172a;outline:0}
+input:focus{border-color:#f97316}
+.go{margin-top:20px;width:100%;border:0;font:inherit;font-weight:800;font-size:17px;color:#fff;background:linear-gradient(135deg,#ea580c,#f97316);border-radius:18px;padding:16px;cursor:pointer;box-shadow:0 6px 14px rgba(234,88,12,.3)}
+.go:disabled{opacity:.45;box-shadow:none}
+.go.sec{background:#fff;color:#ea580c;border:1.5px solid #fdba74;box-shadow:none}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.choice button{font:inherit;font-weight:900;font-size:15px;padding:14px;border-radius:16px;border:1.5px solid #cbd5e1;background:#fff;color:#334155;cursor:pointer}
+.choice button.on{background:linear-gradient(135deg,#ea580c,#f97316);border-color:#c2410c;color:#fff}
+p.m{color:#64748b;font-size:14px;line-height:1.7;margin:10px 4px}
+.row{display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:18px;padding:12px 14px;margin-top:10px}
+.row b{display:block;font-size:15px}.row small{color:#64748b;font-size:13px}.row .p{margin-inline-start:auto;font-weight:800;color:#ea580c;white-space:nowrap}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.acts .go{margin:0;padding:12px;font-size:15px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:#fff7ed;border-radius:20px;padding:16px;text-align:center}
+.stat b{display:block;font-size:30px;color:#ea580c}.stat span{font-size:14px;color:#475569;font-weight:700}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;display:none}
+
+.vh{font-weight:900;font-size:13px;color:#c2410c;letter-spacing:.02em;margin:0 4px 10px}
+.vchoice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.vchoice button{font:inherit;font-weight:900;font-size:16px;padding:14px;border-radius:16px;border:2px solid #cbd5e1;background:#fff;color:#334155;cursor:pointer}
+
+.vchoice button.on{background:linear-gradient(135deg,#ea580c,#f97316);border-color:#c2410c;color:#fff;box-shadow:0 6px 14px rgba(234,88,12,.3)}
+.vb{display:inline-block;font-size:12px;font-weight:900;background:#ffedd5;color:#c2410c;border-radius:999px;padding:3px 10px;margin-inline-end:6px}
+
+.splash{position:fixed;inset:0;z-index:50;background:linear-gradient(135deg,#d97706 0%,#f97316 50%,#f59e0b 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:24px;text-align:center;color:#fff;opacity:1;transition:opacity .7s ease}
+.splash.out{opacity:0;pointer-events:none}
+.splash p{margin:0;font-size:26px;font-weight:800;line-height:1.7;opacity:0;animation:sp 1s ease forwards;animation-delay:.3s}
+
+@keyframes sp{to{opacity:1}}
+.demo{background:#fef3c7;color:#92400e;border-radius:16px;padding:10px 14px;font-size:13px;line-height:1.6;margin-bottom:14px;font-weight:700}
+.err{background:#fee2e2;color:#991b1b;border-radius:16px;padding:10px 14px;font-size:13px;margin-bottom:14px;font-weight:700}
+</style><div class="wrap"><div class="app">
+<header>
+ <div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3"/><circle cx="18.5" cy="17" r="3"/><path d="M8.5 17h4l3-6h-5M15 6h3l1 3M12 11l-2-3H7"/></svg></div><h1>وصّلني</h1></div>
+ <div class="counter"><div class="n"><div class="dot"><i></i></div><div class="num" id="cnt">0</div></div><div style="text-align:right"><div class="t">المناديب المتاحين الآن (بصمة الحضور)</div><div class="s">مندوب نشط يستقبل رحلات</div></div></div>
+ <div class="tabs">
+  <button class="tab on" data-t="customer"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg><span>واجهة العميل<br>(اطلب رحلة)</span></button>
+  <button class="tab" data-t="driver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="3"/><circle cx="12" cy="10" r="2.5"/><path d="M8 17c.5-2 2-3 4-3s3.5 1 4 3"/></svg><span>بوابة المناديب</span></button>
+  <button class="tab wide" data-t="owner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>الإدارة والمتابعة</span></button>
+ </div>
+ <button class="copy" id="copy"><svg viewBox="0 0 24 24" fill="#fbbf24"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.6 10.6l7-3.2M8.6 13.4l7 3.2" stroke="#fbbf24" stroke-width="1.8"/></svg>نسخ رابط دخول المناديب المباشر</button>
+</header>
+<main id="v"></main>
+</div><div class="toast" id="toast">تم نسخ الرابط</div></div>`;
+const $=s=>root.querySelector(s);
+const VL={moto:'موتوسيكل',tuk:'توكتوك'};
+const ICON_MOTO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3"/><circle cx="18.5" cy="17" r="3"/><path d="M8.5 17h4l3-6h-5M15 6h3l1 3M12 11l-2-3H7"/></svg>';
+const ICON_TUK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16V9a3 3 0 0 1 3-3h8l4 5h3v5"/><path d="M3 16h3M10 16h6M14 6v5h7"/><circle cx="7" cy="17" r="2.2"/><circle cx="18" cy="17" r="2.2"/></svg>';
+let cur=['driver','owner'].includes(location.hash.slice(1))?location.hash.slice(1):'customer',customer=null,driver=null,trips=[],drivers=[],nid=1,vsel='',error='';
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ICON_U='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="10" cy="8" r="4"/><path d="M2 21c0-4 3.5-6.500 8-6.500s8 2.500 8 6.500z"/><path d="M17 8l2 2 3-3.500" stroke="currentColor" fill="none" stroke-width="2"/></svg>';
+const ICON_C='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="3"/><circle cx="12" cy="10" r="2.500"/><path d="M8 17c.5-2 2-3 4-3s3.500 1 4 3"/></svg>';
+const ICON_G='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>';
+const head=(icon,title,badge)=>`<section class="card"><div class="ch"><div class="ci">${icon}</div><h2>${title}</h2>${badge}</div>`;
+const fld=(l,ph,v='',t='text')=>`<label>${l}</label><input type="${t}" placeholder="${ph}" value="${esc(v)}">`;
+const banner=()=>(live?'':'<div class="demo">نسخة تجريبية: البيانات على موبايلك بس. الربط الحقيقي بين الموبايلات وإشعار الواتساب بيشتغل بعد إعداد الجدول والسكربت.</div>')+(error?`<div class="err">${esc(error)}</div>`:'');
+const vbtn=()=>`<div class="vh">اختار نوع المركبة</div><div class="vchoice"><button data-vs="moto" class="${vsel==='moto'?'on':''}">موتوسيكل</button><button data-vs="tuk" class="${vsel==='tuk'?'on':''}">توكتوك</button></div>`;
+const dchoice=()=>`<div class="vh">اختار نوع المركبة</div><div class="choice"><button class="on" data-v="moto">موتوسيكل</button><button data-v="tuk">توكتوك</button></div>`;
+function customerV(){
+ if(!customer) return banner()+head(ICON_U,'بيانات العميل','<span class="badge">غير مسجل</span>')+fld('الاسم بالكامل','مثال: أحمد محمود')+fld('رقم الموبايل (للتواصل)','01xxxxxxxxx','','tel')+'<button class="go" data-a="creg" disabled>تسجيل</button></section>';
+ const own=trips.filter(t=>t.c===customer.name);
+ return banner()+head(ICON_U,'اطلب رحلة','<span class="badge ok">مسجل</span>')+vbtn()+`<p class="m">أهلًا ${esc(customer.name)}</p>`+fld('من','مكان الاستلام',customer.from||'')+fld('إلى','مكان الوصول',customer.to||'')+fld('السعر (جنيه)','0',customer.price||'','number')+`<button class="go" data-a="send" disabled>إرسال</button>${customer.sent?'<p class="m">طلبك وصل للمناديب. هتعرف أول ما حد يوافق.</p>':''}</section>`+
+ `<section class="card"><div class="ch"><h2>طلباتك</h2></div>${own.length?own.map(t=>`<div class="row"><div><b><span class="vb">${VL[t.vehicle]||''}</span>${esc(t.from)} إلى ${esc(t.to)}</b><small>${t.s==='new'?'في انتظار مندوب':t.s==='ok'?'وافق '+esc(t.by):'اترفض، هنجرب مندوب تاني'}</small></div><span class="p">${esc(t.price)} جنيه</span></div>`).join(''):'<p class="m">لسه مفيش طلبات.</p>'}</section>`;
+}
+function driverV(){
+ if(!driver) return banner()+head(ICON_C,'تسجيل مندوب','<span class="badge">غير مسجل</span>')+dchoice()+fld('الاسم بالكامل','مثال: محمد علي')+fld('رقم الموبايل','01xxxxxxxxx','','tel')+fld('رقم البطاقة (14 رقم)','xxxxxxxxxxxxxx','','tel')+'<p class="m">رقم البطاقة بيتحفظ عند الإدارة بس ومش بيظهر لأي حد.</p><button class="go" data-a="dreg" disabled>تسجيل</button></section>';
+ const av=trips.filter(t=>t.s==='new'&&t.vehicle===driver.v);
+ return banner()+head(ICON_C,'بصمة الحضور',`<span class="badge ${driver.on?'ok':''}">${driver.on?'شغال':'غير شغال'}</span>`)+`<p class="m"><span class="vb">${VL[driver.v]||''}</span>${driver.on?'إنت شغال دلوقتي وبتستقبل رحلات '+VL[driver.v]+'.':'اضغط لما تبدأ شغل عشان تستقبل الرحلات.'}</p><button class="go ${driver.on?'sec':''}" data-a="tog">${driver.on?'إنهاء الشغل':'بدأت الشغل'}</button></section>`+
+ `<section class="card"><div class="ch"><h2>الرحلات المتاحة</h2></div>${!driver.on?'<p class="m">اضغط بدأت الشغل عشان تشوف الرحلات.</p>':av.length?av.map(t=>`<div class="row" style="display:block"><div style="display:flex;gap:12px"><div><b><span class="vb">${VL[t.vehicle]}</span>${esc(t.from)} إلى ${esc(t.to)}</b><small>العميل ${esc(t.c)}</small></div><span class="p">${esc(t.price)} جنيه</span></div><div class="acts"><button class="go" data-a="yes" data-id="${esc(t.id)}">موافق</button><button class="go sec" data-a="no" data-id="${esc(t.id)}">رفض</button></div></div>`).join(''):'<p class="m">مفيش رحلات جديدة دلوقتي.</p>'}</section>`;
+}
+function ownerV(){
+ const a=drivers;const c=v=>a.filter(d=>d.v===v).length;
+ const st=[['شغالين الآن',a.length],['موتوسيكل',c('moto')],['توكتوك',c('tuk')],['رحلات النهارده',trips.length]];
+ const ch=trips.filter(t=>t.s!=='new');
+ return banner()+head(ICON_G,'المناديب الشغالين دلوقتي','')+`<div class="stats">${st.map(([k,v])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('')}</div></section>`+
+ `<section class="card"><div class="ch"><h2>إشعارات الرحلات</h2></div>${ch.length?ch.map(t=>`<div class="row"><div><b>${esc(t.by)} ${t.s==='ok'?'وافق على':'رفض'} رحلة</b><small><span class="vb">${VL[t.vehicle]||''}</span>من ${esc(t.from)} إلى ${esc(t.to)}</small></div><span class="p">${esc(t.price)} جنيه</span></div>`).join(''):'<p class="m">لسه مفيش رد على أي رحلة.</p>'}</section>`;
+}
+function render(){
+ root.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===cur));
+ $('#cnt').textContent=live?drivers.length:(driver&&driver.on?1:0);
+ $('#v').innerHTML=cur==='customer'?customerV():cur==='driver'?driverV():ownerV();
+ upd();
+}
+function upd(){
+ const i=[...root.querySelectorAll('#v input')];const b=root.querySelector('#v .go[data-a="creg"],#v .go[data-a="dreg"],#v .go[data-a="send"]');
+ if(!b)return;let ok=i.every(x=>x.value.trim());
+ if(b.dataset.a==='send')ok=ok&&!!vsel;
+ if(b.dataset.a==='dreg')ok=ok&&/^\d{14}$/.test(i[2].value.trim());
+ b.disabled=!ok;
+}
+async function api(method,body){
+ const r=await fetch(API_URL,method==='GET'?{}:{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+ return r.json();
+}
+async function refresh(){
+ if(!live)return;
+ try{
+  const d=await api('GET');
+  trips=(d.trips||[]).map(t=>({id:t.id,c:t.customer,from:t.pickup,to:t.dest,price:t.price,vehicle:t.vehicle,s:t.status==='pending'?'new':t.status==='accepted'?'ok':'no',by:t.driver})).reverse();
+  drivers=(d.drivers||[]).map(x=>({name:x.name,v:x.vehicle}));
+  error='';
+ }catch(e){error='مش قادر أوصل للسيرفر، هحاول تاني.'}
+ if(!root.querySelector('#v input:focus'))render();
+}
+async function ping(){if(live&&driver&&driver.on){try{await api('POST',{action:'ping',name:driver.name,vehicle:driver.v,on:true})}catch(e){}}}
+root.addEventListener('input',upd);
+root.addEventListener('click',async e=>{
+ const t=e.target.closest('.tab');if(t){cur=t.dataset.t;render();return}
+ if(e.target.closest('#copy')){const u=location.href.split('#')[0]+'#driver';(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).catch(()=>{}).finally(()=>{const x=$('#toast');x.style.display='block';setTimeout(()=>x.style.display='none',1800)});return}
+ const vs=e.target.closest('[data-vs]');if(vs){vsel=vs.dataset.vs;root.querySelectorAll('[data-vs]').forEach(x=>x.classList.toggle('on',x===vs));upd();return}
+ const v=e.target.closest('.choice button');if(v){root.querySelectorAll('.choice button').forEach(x=>x.classList.toggle('on',x===v));return}
+ const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
+ const I=[...root.querySelectorAll('#v input')].map(x=>x.value.trim());const a=b.dataset.a;
+ try{
+ if(a==='creg')customer={name:I[0],phone:I[1],sent:false};
+ else if(a==='send'){customer.from=I[0];customer.to=I[1];customer.price=I[2];customer.sent=true;
+  if(live){await api('POST',{action:'request',customer:customer.name,phone:customer.phone,pickup:I[0],dest:I[1],price:I[2],vehicle:vsel});await refresh()}
+  else trips.unshift({id:String(nid++),c:customer.name,from:I[0],to:I[1],price:I[2],vehicle:vsel,s:'new'})}
+ else if(a==='dreg'){const on=root.querySelector('.choice .on');driver={name:I[0],phone:I[1],v:on&&on.dataset.v,on:false};if(live)await api('POST',{action:'register',name:I[0],phone:I[1],nid:I[2],vehicle:driver.v})}
+ else if(a==='tog'){driver.on=!driver.on;if(live){await api('POST',{action:'ping',name:driver.name,vehicle:driver.v,on:driver.on});await refresh()}}
+ else{const r=trips.find(x=>String(x.id)===b.dataset.id);if(r){r.s=a==='yes'?'ok':'no';r.by=driver.name;if(live){await api('POST',{action:a==='yes'?'accept':'reject',id:r.id,driver:driver.name});await refresh()}}}
+ }catch(err){error='حصلت مشكلة في الاتصال. جرّب تاني.'}
+ render();
+});
+render();
+if(live){refresh();setInterval(refresh,5000);setInterval(ping,30000)}
+}
+
+(function(){
+ var d=document.getElementById('dhikr'),i=Math.floor(Math.random()*ADHKAR.length),last=-1;
+ try{last=parseInt(localStorage.getItem('last-dhikr')||'-1',10)}catch(e){}
+ if(i===last)i=(i+1+Math.floor(Math.random()*(ADHKAR.length-1)))%ADHKAR.length;
+ try{localStorage.setItem('last-dhikr',String(i))}catch(e){}
+ d.textContent=ADHKAR[i];
+ var app=document.getElementById('app');
+ mount(app);
+ setTimeout(function(){
+  app.style.display='block';document.body.className='ready';
+  var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#d97706';
+  var sp=document.getElementById('splash');sp.className='out';
+  setTimeout(function(){sp.remove()},700);
+ },4000);
+})();
+</script></body></html>
